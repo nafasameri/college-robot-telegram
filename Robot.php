@@ -1,5 +1,5 @@
 <?php
-include_once('functions.php');
+include_once('functions.php'); 
 
 $admins = array('92838553', '116245039');
 $update = json_decode(file_get_contents('php://input'));
@@ -22,9 +22,8 @@ else
 $Fields = array(array('مهندسی کامپیوتر', 'مهندسی برق'), array('مهندسی صنایع', 'مهندسی مکانیک'), array('مهندسی انرژی', 'مهندسی شیمی'), array('مهندسی عمران', 'ریاضیات و کاربردها'), array('عمومی', 'زبان'), array('بازگشت به منو اصلی'));
 
 // State
-if(isset($update->callback_query)) {
-  //try {Query("INSERT INTO state (chat_id, registerstate) VALUES ('$callback_query_chat_id','0')");} catch (Exception $e) {}
-  $State = Fetch(Query("SELECT * FROM state WHERE chat_id='$callback_query_chat_id'")); }
+if(isset($update->callback_query))
+  $State = Fetch(Query("SELECT * FROM state WHERE chat_id='$callback_query_chat_id'"));
 else {
   try {Query("INSERT INTO state (chat_id, mainstate, groupstate, coursestate, registerstate, management) VALUES ('$chat_id','0','0','0','0','0')");} catch (Exception $e) {}
   $State = Fetch(Query("SELECT * FROM state WHERE chat_id='$chat_id'"));
@@ -150,30 +149,32 @@ switch($State[1]['mainstate']) {
     }
     break;
   case 4: // نظرسنجی
-    $id_course = Fetch(Query("SELECT id FROM course WHERE name=N'$message_text'"));
-    $id_course = $id_course[1]['id'];
-    if (Fetch(Query("SELECT * FROM comments WHERE chat_id='$chat_id' AND course_id !='$id_course'")) == NULL)
-    {
-      Query("UPDATE state SET coursestate='$id_course' WHERE chat_id='$chat_id'");
-      sendMessage($chat_id, "چند درصد از این دوره رضایت دارید؟", InlineKeyboardMarkup(
-          array(
-            array(array('text'=>"10", 'callback_data'=>"10"), array('text'=>"20", 'callback_data'=>"20"), array('text'=>"30", 'callback_data'=>"30")), 
-            array(array('text'=>"40", 'callback_data'=>"40"), array('text'=>"50", 'callback_data'=>"50"), array('text'=>"60", 'callback_data'=>"60")), 
-            array(array('text'=>"70", 'callback_data'=>"70"), array('text'=>"80", 'callback_data'=>"80"), array('text'=>"90", 'callback_data'=>"90")), 
-            array(array('text'=>"100", 'callback_data'=>"100")) 
-          )));
+    if($message_text != "بازگشت" && $message_text != "بازگشت به منو اصلی") {
+      $id_course = Fetch(Query("SELECT id FROM course WHERE name=N'$message_text'"));
+      $id_course = $id_course[1]['id'];
+      if (Fetch(Query("SELECT * FROM comments WHERE chat_id='$chat_id' AND course_id='$id_course'")) == NULL)
+      {
+        Query("UPDATE state SET coursestate='$id_course' WHERE chat_id='$chat_id'");
+        sendMessage($chat_id, "چند درصد از این دوره رضایت دارید؟", InlineKeyboardMarkup(
+            array(array(array('text'=>"10", 'callback_data'=>"10"), array('text'=>"20", 'callback_data'=>"20"), array('text'=>"30", 'callback_data'=>"30")), 
+              array(array('text'=>"40", 'callback_data'=>"40"), array('text'=>"50", 'callback_data'=>"50"), array('text'=>"60", 'callback_data'=>"60")), 
+              array(array('text'=>"70", 'callback_data'=>"70"), array('text'=>"80", 'callback_data'=>"80"), array('text'=>"90", 'callback_data'=>"90")), 
+              array(array('text'=>"100", 'callback_data'=>"100")))));
+      }
+      else
+        sendMessage($chat_id, "شما نظرتان را درمورد این دوره ثبت کرده اید. نظرات ثبت شده قابل تغییر نیستند.");
     }
-    else
-      sendMessage($chat_id, "شما نظرتان را درمورد این دوره ثبت کرده اید. نظرات ثبت شده قابل تغییر نیستند.");
     break;
   case 41:
-    Query("UPDATE comments SET comment='$message_text' WHERE chat_id='$chat_id'");
-    sendMessage($chat_id, "از شما سپاس گذاریم که وقتتان را در اختیارمان گذاشتید و نظرتان را ثبت کردید.");
-    Query("UPDATE state SET mainstate='0' WHERE chat_id='$chat_id'");
-    $id_course = $State[1]['coursestate'];
-    $course = Fetch(Query("SELECT name FROM course WHERE id='$id_course'"));
-    $information = Fetch(Query("SELECT * FROM comments WHERE chat_id='$chat_id' AND course_id='$id_course'"));
-    sendToAdmins($admins, "یک دانشجو از درس ". $course[1]['name']. " ". $information[1]['satisfaction']. " درصد رضایت داشته است. و نظر کلی او راجب به این درس این گونه است:\n\"".$information[1]['comment']."\"");
+    if($message_text != "بازگشت" && $message_text != "بازگشت به منو اصلی") {
+      $id_course = $State[1]['coursestate'];
+      Query("UPDATE comments SET comment='$message_text' WHERE chat_id='$chat_id' AND course_id='$id_course'");
+      sendMessage($chat_id, "از شما سپاس گذاریم که وقتتان را در اختیارمان گذاشتید و نظرتان را ثبت کردید.");
+      Query("UPDATE state SET mainstate='4' WHERE chat_id='$chat_id'");
+      $course = Fetch(Query("SELECT name FROM course WHERE id='$id_course'"));
+      $information = Fetch(Query("SELECT * FROM comments WHERE chat_id='$chat_id' AND course_id='$id_course'"));
+      sendToAdmins($admins, "یک دانشجو از درس ". $course[1]['name']. " ". $information[1]['satisfaction']. " درصد رضایت داشته است. و نظر کلی او راجب به این درس این گونه است:\n\"".$information[1]['comment']."\"");
+    }
     break;
 }
 
