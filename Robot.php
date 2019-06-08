@@ -54,9 +54,10 @@ switch ($message_text) {
     Query("UPDATE state SET mainstate='3' WHERE chat_id='$chat_id'");
     break;
   case "نظرسنجی":
-    $curs = ExtractCourses(Fetch(Query("SELECT course.name FROM course JOIN register ON course.id = register.id_course WHERE id_user='$chat_id'")));
+    $curs = Fetch(Query("SELECT course.name FROM course JOIN register ON course.id = register.id_course WHERE id_user='$chat_id'"));
+    $Curs = ExtractCourses($curs);
     if($curs != NULL) {
-      sendMessage($chat_id, "شما در دوره های زیر ثبت نام نموده اید. هر دوره ای که مدنظرتان است را انتخاب نموده نظرتان را درباره ی آن بیان کنید.", ReplyKeyboardMarkup($curs));
+      sendMessage($chat_id, "شما در دوره های زیر ثبت نام نموده اید. هر دوره ای که مدنظرتان است را انتخاب نموده نظرتان را درباره ی آن بیان کنید.", ReplyKeyboardMarkup($Curs));
       Query("UPDATE state SET mainstate='4' WHERE chat_id='$chat_id'");    
     }
     else
