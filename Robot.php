@@ -31,7 +31,7 @@ else {
 
 //MAIN
 switch ($message_text) {
-	case "/start":
+    case "/start":
 		sendMessage($chat_id, "سلام\nربات کالج دانشگاه صنعتی قوچان هستم، از آشنای با شما بسیار خرسندم.\nاینجام تا به شما در مورد دوره های آموزشی کالج دانشگاه صنعتی قوچان کمک کنم! خوشحال می شوم بتوانم این کار را به خوبی برایتان انجام بدهم.\n\nدر چه موردی می توانم راهنماییتان کنم؟", ReplyKeyboardMarkup($MainKeyboard));
     Query("UPDATE state SET mainstate='0', groupstate='0', coursestate='0', registerstate='0',management='0' WHERE chat_id='$chat_id'");
     break;
@@ -252,6 +252,13 @@ switch ($State[1]['registerstate']) {
     break;
   case 3:
     if($phone_number != "" && $message_text != "بازگشت") {
+      foreach($phone_number as $digit)
+      {
+        if(!is_int($digit)) {
+          sendMessage($chat_id, "شماره تلفن وارد شده، صحیح نیست. لطفا دوباره تلاش کنید.");
+          break;
+        }
+      }
       Query("UPDATE user SET phone='$phone_number' WHERE chat_id='$chat_id'");   
       Lodding($chat_id, "لطفا شکیبا باشید، سیستم در حال ثبت اطلاعات شماست.", $message_id+1, "اطلاعات شما با موفقیت ثبت شد. :)");
       Query("UPDATE state SET registerstate='4' WHERE chat_id='$chat_id'");
